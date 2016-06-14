@@ -2,16 +2,18 @@ package main
 
 import (
 	"errors"
-	"flag"
 	"log"
 	"os"
 	"os/exec"
 	"strings"
+
+	flag "github.com/ogier/pflag"
 )
 
 type Command struct {
-	GitURL string
-	Follow bool
+	GitURL  string
+	GitArgs []string
+	Follow  bool
 }
 
 func (c *Command) MakeGitDir() error {
@@ -24,7 +26,11 @@ func (c *Command) Clone() error {
 		return errors.New("git must be installed")
 	}
 
-	cmd := exec.Command("git", "clone", c.GitURL, ParseGitPath(c.GitURL))
+	args := []string{"clone"}
+	args = append(args, c.GitArgs...)
+	args = append(args, c.GitURL, ParseGitPath(c.GitURL))
+
+	cmd := exec.Command("git", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
@@ -53,11 +59,11 @@ func main() {
 	cmd := Command{}
 
 	followDesc := "(WIP) After the clone, change to the new directory"
-	flag.BoolVar(&cmd.Follow, "follow", false, followDesc)
-	flag.BoolVar(&cmd.Follow, "f", false, followDesc+" (shorthand)")
+	flag.BoolVarP(&cmd.Follow, "follow", "f", false, followDesc)
 	flag.Parse()
 
 	args := flag.Args()
+	cmd.GitArgs = args[:len(args)-1]
 	cmd.GitURL = args[len(args)-1]
 
 	if err := cmd.MakeGitDir(); err != nil {
