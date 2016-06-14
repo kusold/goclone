@@ -1,7 +1,13 @@
 # goclone
 Automatically clones a repo to the appropriate location for your $GOPATH.
 
-## Example:
+## Usage
+```
+$ go get github.com/kusold/goclone
+$ goclone git@repourl
+```
+
+## Example
 ```
 ~GOPATH/src/github.com/kusold
 ❯ goclone git@github.com:kusold/goclone.git
