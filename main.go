@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 
 	flag "github.com/ogier/pflag"
@@ -43,9 +44,20 @@ func (c *Command) Chdir() error {
 }
 
 func ParseGitPath(path string) string {
-	// git@github.com:Kusold/goclone.git
-	path = strings.TrimPrefix(path, "git@")
-	path = strings.Replace(path, ":", "/", 1)
+	// remove protocol
+	re := regexp.MustCompile(`^(ssh|https|http|git|ftps|ftp)://`)
+	path = re.ReplaceAllString(path, "")
+
+	//remove username
+	re = regexp.MustCompile(`^\w+@`)
+	path = re.ReplaceAllString(path, "")
+
+	// remove colon and port
+	re = regexp.MustCompile(`:\d*/?`)
+	path = re.ReplaceAllString(path, "/")
+
+	// Clean up the end
+	path = strings.TrimSuffix(path, "/")
 	path = strings.TrimSuffix(path, ".git")
 
 	gopath := os.Getenv("GOPATH")
